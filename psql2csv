@@ -3,8 +3,11 @@
 import re
 import csv
 import sys
+import signal
 import argparse
 
+
+signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--strict", help=("instead of just removing pipes or "
