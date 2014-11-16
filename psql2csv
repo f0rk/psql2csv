@@ -46,7 +46,7 @@ for line in sys.stdin.xreadlines():
         continue
 
     # skip a line that is the row count
-    if re.search(r'^\(\d+ rows?\)$', line):
+    if re.search(r'^\s*\(\d+ rows?\)\s*$', line):
         continue
 
     if not args.strict:
