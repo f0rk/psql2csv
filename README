@@ -42,7 +42,7 @@ the pipes in the header row. Assume /tmp/colors.txt contains the following:
  2  | green | Green | green
  3  | blue  | Blue | blue
 
-Without --strict, you will get the following (incorrect output):
+Without --strict, you will get the following (incorrect) output:
 
 Id,Color,Color Name
 1,red,Red,red
