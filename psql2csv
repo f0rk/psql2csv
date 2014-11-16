@@ -1,0 +1,101 @@
+#!/usr/bin/env python
+
+import re
+import csv
+import sys
+import argparse
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--strict", help=("instead of just removing pipes or "
+                                      "whitespace, actually calculate column "
+                                      "alignments to parse the data"),
+                    action="store_true")
+
+args = parser.parse_args()
+
+# used in normal mode to store where the data should be sliced
+cuts = None
+
+# used in normal mode to emit a csv
+writer = None
+
+# helper function to figure out the cut locations. when using a cursor, the
+# cuts can shift. this isn't safe if the first row with the changed locations
+# contains a |, but oh well.
+def determine_cuts(line):
+
+    # find the locations of the pipes
+    pipe_locations = []
+    for match in re.finditer(r'\|', line):
+        pipe_locations.append(match.start())
+
+    return pipe_locations + [None]
+
+for line in sys.stdin.xreadlines():
+
+    # skip the line after the headers
+    if re.search(r'^\s*[-+]+\s*$', line):
+        continue
+
+    # skip empty lines
+    if re.search(r'^\s*$', line):
+        continue
+
+    # skip a line that is the row count
+    if re.search(r'^\(\d+ rows?\)$', line):
+        continue
+
+    if not args.strict:
+        line = re.sub(r'^\s+', "", line)
+        line = re.sub(r'\s+$', "", line)
+        line = re.sub(r'\s+\|\s+', ",", line)
+
+        print(line)
+    else:
+
+        # create a writer if we don't have one
+        if writer is None:
+            writer = csv.writer(sys.stdout)
+        
+        # figure out where to slice
+        if cuts is None:
+
+            # get our cuts
+            cuts = determine_cuts(line)
+
+            # figure out the column names
+            names = line.split("|")
+            names = [n.strip() for n in names]
+            
+            # write them out
+            writer.writerow(names)
+            continue
+
+        # assert that the cuts fall on pipes. if they don't, recalculate them.
+        cuts_on_pipes = True
+        for i, cut in enumerate(cuts):
+            if cut is not None:
+                if line[cut:cut+1] != "|":
+                    cuts_on_pipes = False
+                    break
+
+        if not cuts_on_pipes:
+            cuts = determine_cuts(line)
+
+        # cut the line up as per our cuts
+        values = []
+        start = 0
+        for end in cuts:
+            if end is None:
+                value = line[start+1:]
+            else:
+                value = line[start+1:end]
+
+            values.append(value.strip())
+
+            start = end
+
+        # write it out
+        writer.writerow(values)
+

@@ -1,0 +1,58 @@
+Convert psql's pretty printed table format into a csv
+
+Requires python.
+
+Examples:
+
+Say we have the following output from psql stored in a file /tmp/colors.txt:
+
+ Id | Color | Color Name |            Description            | Hex # | Inventory |  Add Date  
+----+-------+------------+-----------------------------------+-------+-----------+------------
+ 1  | red   | Red        | Having the color of blood         | #f00  | 0.25      | 2014-10-16
+ 2  | green | Green      | Having the color of growing grass | #0f0  | 10.18     | 2014-08-25
+ 3  | blue  | Blue       | Having the color of the clear sky | #00f  | 4.67      | 2014-09-17
+
+~$ psql2csv < /tmp/colors.txt > /tmp/colors.csv
+
+colors.csv now contains the following:
+
+Id,Color,Color Name,Description,Hex #,Inventory,Add Date
+1,red,Red,Having the color of blood,#f00,0.25,2014-10-16
+2,green,Green,Having the color of growing grass,#0f0,10.18,2014-08-25
+3,blue,Blue,Having the color of the clear sky,#00f,4.67,2014-09-17
+
+The standard mode also allows you to paste into an indenting vim, which will do
+this to the data:
+
+ Id | Color | Color Name |            Description            | Hex # | Inventory |  Add Date
+ ----+-------+------------+-----------------------------------+-------+-----------+------------
+  1  | red   | Red        | Having the color of blood         | #f00  | 0.25      | 2014-10-16
+   2  | green | Green      | Having the color of growing grass | #0f0  | 10.18     | 2014-08-25
+    3  | blue  | Blue       | Having the color of the clear sky | #00f  | 4.67      | 2014-09-17
+
+And it will produce the same csv as above.
+
+However, if your data contains embedded pipes, this may not work. You will need
+to use the --strict option, which will cut the data based on the locations of
+the pipes in the header row. Assume /tmp/colors.txt contains the following:
+
+ Id | Color |   Color Name 
+----+-------+----------------
+ 1  | red   | Red | red
+ 2  | green | Green | green
+ 3  | blue  | Blue | blue
+
+Without --strict, you will get the following (incorrect output):
+
+Id,Color,Color Name
+1,red,Red,red
+2,green,Green,green
+3,blue,Blue,blue
+
+Using --strict makes sure the data is parsed correctly:
+
+Id,Color,Color Name
+1,red,Red | red
+2,green,Green | green
+3,blue,Blue | blue
+
