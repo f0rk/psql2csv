@@ -38,7 +38,7 @@ def determine_cuts(line):
 
     return pipe_locations + [None]
 
-for line in sys.stdin.xreadlines():
+for line in sys.stdin:
 
     # skip the line after the headers
     if re.search(r'^\s*[-+]+\s*$', line):
