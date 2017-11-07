@@ -53,9 +53,9 @@ for line in sys.stdin:
         continue
 
     if not args.strict:
-        line = re.sub(r'^\s+', "", line)
-        line = re.sub(r'\s+$', "", line)
-        line = re.sub(r'\s+\|\s+', ",", line)
+        line = re.sub(r'^\s+', '"', line)
+        line = re.sub(r'\s+$', '"', line)
+        line = re.sub(r'\s+\|\s+', '","', line)
 
         print(line)
     else:
